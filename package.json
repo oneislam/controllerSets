@@ -1,0 +1,14 @@
+{
+  "name": "controllersets",
+  "version": "1.0.0",
+  "description": "The npm package \"controllersets\" accelerates backend development by providing ready-made APIs for common operations: get all, get by ID, create, update, and delete. Boost your API creation process effortlessly.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Sabbir",
+  "license": "ISC",
+  "dependencies": {
+    "mongoose": "^7.2.1"
+  }
+}
