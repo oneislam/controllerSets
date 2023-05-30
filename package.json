@@ -1,7 +1,7 @@
 {
-  "name": "controllersets",
+  "name": "express-controller-sets",
   "version": "1.0.0",
-  "description": "The npm package \"controllersets\" accelerates backend development by providing ready-made APIs for common operations: get all, get by ID, create, update, and delete. Boost your API creation process effortlessly.",
+  "description": "The npm package \"express-controller-sets\" accelerates backend development by providing ready-made APIs for common operations: get all, get by ID, create, update, and delete. Boost your API creation process effortlessly.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
