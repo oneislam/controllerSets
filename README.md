@@ -68,6 +68,64 @@ export default router;
 
 ```
 
+### Single files uploading
+
+```js
+import {
+  ControllerSets,
+  FileUploaderControllerSets,
+} from "express-controller-sets";
+import taskModel from "../models/taskModels.js";
+import { basePath } from "../settings.js";
+
+// Create an instance of the controller
+// (Mongoose Model, Sorting/ordering field name, filters using req.query)
+const taskController = new ControllerSets(taskModel, "-_id", [
+  "email",
+  "status",
+]);
+
+// (Mongoose Model, Upload options, basePath)
+// in file upload we have only one method create
+const uploadFile = new FileUploaderControllerSets(
+  taskModel,
+  {
+    folder: "uploads/user/images/",
+    fileField: "document",
+  },
+  basePath
+);
+
+export { taskController, uploadFile };
+
+```
+
+### Single file uploading routing
+```js
+
+// imports
+import {taskController,uploadFile} from "../controllers/taskClassController.js";
+
+router.post("/", uploadFile.fileUpload.bind(uploadFile));
+
+
+// exports
+export default router;
+
+```
+
+### Multiple files uploading
+
+```js
+
+// currently we don't support multiple file upload
+// we are working on this
+
+
+```
+
+
+
 
 ## License
 
