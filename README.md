@@ -68,22 +68,29 @@ export default router;
 
 ```
 
+### Define base path
+
+```js
+// base path is the main parent folder where your files will be uploaded
+// how to create base path --->
+// create settings.js
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const basePath = path.resolve(__dirname);
+
+export { basePath };
+
+```
+
 ### Single files uploading
 
 ```js
-import {
-  ControllerSets,
-  FileUploaderControllerSets,
-} from "express-controller-sets";
+import {ControllerSets,FileUploaderControllerSets} from "express-controller-sets";
 import taskModel from "../models/taskModels.js";
 import { basePath } from "../settings.js";
-
-// Create an instance of the controller
-// (Mongoose Model, Sorting/ordering field name, filters using req.query)
-const taskController = new ControllerSets(taskModel, "-_id", [
-  "email",
-  "status",
-]);
 
 // (Mongoose Model, Upload options, basePath)
 // in file upload we have only one method create
