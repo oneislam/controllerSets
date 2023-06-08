@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { uploadHandler } from "./fileUploadConfig.js";
 
 class ControllerSets {
   constructor(model, orderBy = "none", query = []) {
@@ -61,7 +62,7 @@ class ControllerSets {
     try {
       const example = await this.model.findById(id);
       if (!example) {
-        return res.status(404).json({ error: "Example not found" });
+        return res.status(404).json({ error: "Data not found" });
       }
       res.json(example);
     } catch (error) {
@@ -77,7 +78,7 @@ class ControllerSets {
       await result.save();
       return res.status(201).send(result);
     } catch (error) {
-      return res.status(500).send(error);
+      return res.status(500).send(error.message);
     }
   }
 
@@ -109,7 +110,7 @@ class ControllerSets {
       const result = await this.model.findByIdAndDelete(id);
 
       if (!result) {
-        return res.status(404).json({ error: "Example not found" });
+        return res.status(404).json({ error: "Data not found" });
       }
       return res.status(200).send({ message: "success" });
     } catch (error) {
@@ -118,40 +119,37 @@ class ControllerSets {
   }
 }
 
-class FileUploaderControllerSets extends ControllerSets {
-  constructor(model, orderBy, query, uploadOptions) {
-    super(model, orderBy, query);
+class FileUploaderControllerSets {
+  constructor(model, uploadOptions, basePath) {
+    this.model = model;
     this.uploadOptions = uploadOptions;
+    this.basePath = basePath;
   }
 
-  async create(req, res) {
+  async fileUpload(req, res, next) {
     try {
-      if (req.files && Object.keys(req.files).length > 0) {
-        const files = req.files;
-
-        if (this.uploadOptions.multiple) {
-          // Handle multiple file uploads
-          const filePromises = Object.values(files).map((file) => {
-            const filePath = `/path/to/save/${file.name}`; // Replace with the actual path to save the file
-            return file.mv(filePath);
-          });
-
-          await Promise.all(filePromises);
-        } else {
-          // Handle single file upload
-          const file = files.file; // Assuming the file field name is 'file', modify it as per your actual field name
-          const filePath = `/path/to/save/${file.name}`; // Replace with the actual path to save the file
-
-          await file.mv(filePath);
+      const uploadOptions = this.uploadOptions;
+      const basePath = this.basePath;
+      uploadHandler(uploadOptions.folder, basePath).single(
+        uploadOptions.fileField
+      )(req, res, async (err) => {
+        if (err) {
+          return res.status(400).json({ error: err.message });
         }
-      }
-
-      const result = await this.model.create(req.body);
-      await result.validate();
-      await result.save();
-      return res.status(201).send(result);
+        if (req.file) {
+          req.body[`${uploadOptions.fileField}`] = req.file.filename;
+        }
+        try {
+          const result = await this.model.create(req.body);
+          await result.validate();
+          await result.save();
+          return res.status(201).send(result);
+        } catch (error) {
+          return res.status(500).send(error.message);
+        }
+      });
     } catch (error) {
-      return res.status(500).send(error);
+      return res.status(500).send(error.message);
     }
   }
 }
