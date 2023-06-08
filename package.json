@@ -1,6 +1,6 @@
 {
   "name": "express-controller-sets",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "The npm package \"express-controller-sets\" accelerates backend development by providing ready-made APIs for common operations: get all, get by ID, create, update, and delete. Boost your API creation process effortlessly.",
   "main": "index.js",
   "scripts": {
