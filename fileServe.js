@@ -1,7 +1,7 @@
 import path from "path";
 
 class FileServe {
-  constructor(paths = []) {
+  constructor(paths = [], basePath) {
     this.paths = paths;
     this.basePath = basePath;
   }
