@@ -1,3 +1,6 @@
-import { ControllerSets, FileUploaderControllerSets } from "./ControllerSets";
-import { FileServe } from "./fileServe";
+import {
+  ControllerSets,
+  FileUploaderControllerSets,
+} from "./ControllerSets.js";
+import { FileServe } from "./fileServe.js";
 export { ControllerSets, FileServe, FileUploaderControllerSets };
