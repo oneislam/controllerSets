@@ -6,7 +6,7 @@ class FileServe {
     this.basePath = basePath;
   }
 
-  static async serve(req, res) {
+  async serve(req, res) {
     try {
       const { fileName } = req.params;
       const paths = this.paths;
