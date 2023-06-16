@@ -10,6 +10,7 @@ class FileServe {
     try {
       const { fileName } = req.params;
       const paths = this.paths;
+      const basePath = this.basePath;
       const imagePath = path.join(basePath, ...paths, fileName);
       return res.sendFile(imagePath);
     } catch (error) {
