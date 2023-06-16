@@ -135,6 +135,27 @@ export default router;
 
 ```
 
+### serve files
+
+```js
+import { basePath } from "../settings.js";
+import { FileServe } from "express-controller-sets";
+
+// path -> parent -> child -> sub-child
+const paths = ["uploads", "demo", "images"];
+// (file path array, base path)
+const filesController = new FileServe(paths, basePath);
+export { filesController };
+
+// routes
+import { filesController } from "./controllers/taskClassController.js";
+
+// use app or router ->
+// don't rename params -> :fileName
+app.get("/files/:fileName", filesController.serve.bind(filesController));
+
+```
+
 
 
 
