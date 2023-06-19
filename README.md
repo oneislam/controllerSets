@@ -2,9 +2,11 @@
 
 [controllerSets](https://sabbirmahmud.com/) is a automate tool that help backend developers to create Rest api using express.js and mongoose. Don't need to write same code again and again, use [controllerSets](https://sabbirmahmud.com/) to boost your productivity.
 
-## Upload logs:
-* file upload
+## Update logs:
+* single field file upload
+* multi-field file upload
 * file Serving
+
 
 ## Documentation
 
@@ -129,7 +131,7 @@ export default router;
 
 ```js
 
-// currently we don't support multiple file upload
+// coming soon
 // we are working on this
 
 
