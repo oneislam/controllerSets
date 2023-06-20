@@ -131,8 +131,26 @@ export default router;
 
 ```js
 
-// coming soon
-// we are working on this
+// multi fields files upload -> create a list of fields name array 
+// (Mongoose Model, Upload options, basePath)
+const uploadFile = new FileUploaderControllerSets(
+  taskModel,
+  {
+    folder: "uploads/user/files/",
+    fileField: "document",
+
+    // multi fields upload options -> {name: field name, maxCount: int}
+    multiFields: [
+      { name: "profile_img", maxCount: 1 },
+      { name: "nid", maxCount: 1 },
+      { name: "birth_certificate", maxCount: 1 },
+    ],
+  },
+  basePath
+);
+
+// multi files upload routes 
+router.post("/", uploadFile.multiFileUpload.bind(uploadFile));
 
 
 ```
