@@ -17,7 +17,7 @@ controllerSets 1.0.0 was released on May 2023. You can find more details on [bac
 
 ## Support
 
-  - [Coming Soon](https://sabbirmahmud.com/)
+  - [Join Discord](https://discord.gg/TWSeY9PJ)
  
 
 
