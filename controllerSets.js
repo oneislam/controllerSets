@@ -153,6 +153,37 @@ class FileUploaderControllerSets {
     }
   }
 
+  async updateFileUpload(req, res, next) {
+    try {
+      const uploadOptions = this.uploadOptions;
+      const basePath = this.basePath;
+      uploadHandler(uploadOptions.folder, basePath).single(
+        uploadOptions.fileField
+      )(req, res, async (err) => {
+        if (err) {
+          return res.status(400).json({ error: err.message });
+        }
+        if (req.file) {
+          req.body[`${uploadOptions.fileField}`] = req.file.filename;
+        }
+        try {
+          const { id } = req.params;
+          const result = await this.model.findByIdAndUpdate(id, req.body, {
+            new: true,
+          });
+          if (!result) {
+            return res.status(404).send("Resource not found");
+          }
+          return res.status(200).send(result);
+        } catch (error) {
+          return res.status(500).send(error.message);
+        }
+      });
+    } catch (error) {
+      return res.status(500).send(error.message);
+    }
+  }
+
   async multiFileUpload(req, res, next) {
     try {
       const uploadOptions = this.uploadOptions;
@@ -175,6 +206,41 @@ class FileUploaderControllerSets {
           await result.validate();
           await result.save();
           return res.status(201).send(result);
+        } catch (error) {
+          return res.status(500).send(error.message);
+        }
+      });
+    } catch (error) {
+      return res.status(500).send(error.message);
+    }
+  }
+
+  async updateMultiFileUpload(req, res, next) {
+    try {
+      const uploadOptions = this.uploadOptions;
+      const basePath = this.basePath;
+      uploadHandler(uploadOptions.folder, basePath).fields(
+        uploadOptions.multiFields
+      )(req, res, async (err) => {
+        if (err) {
+          return res.status(400).json({ error: err.message });
+        }
+        uploadOptions.multiFields.forEach((field) => {
+          const fileField = field.name;
+          req.body[`${field.name}`] = req.files[fileField]
+            ? req.files[fileField][0].filename
+            : "";
+        });
+
+        try {
+          const { id } = req.params;
+          const result = await this.model.findByIdAndUpdate(id, req.body, {
+            new: true,
+          });
+          if (!result) {
+            return res.status(404).send("Resource not found");
+          }
+          return res.status(200).send(result);
         } catch (error) {
           return res.status(500).send(error.message);
         }

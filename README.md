@@ -3,9 +3,10 @@
 [controllerSets](https://sabbirmahmud.com/) is a automate tool that help backend developers to create Rest api using express.js and mongoose. Don't need to write same code again and again, use [controllerSets](https://sabbirmahmud.com/) to boost your productivity.
 
 ## Update logs:
-* single field file upload
-* multi-field file upload
-* file Serving
+* create crud api by create an object -> don't need to write same code again and again
+* single field file upload -> post and put or patch
+* multi-field file upload -> post and put or patch
+* file Serving -> serve file from uploads folders
 
 
 ## Documentation
@@ -120,7 +121,7 @@ export { taskController, uploadFile };
 import {taskController,uploadFile} from "../controllers/taskClassController.js";
 
 router.post("/", uploadFile.fileUpload.bind(uploadFile));
-
+router.put("/:id", uploadFile.updateFileUpload.bind(uploadFile));
 
 // exports
 export default router;
@@ -151,6 +152,7 @@ const uploadFile = new FileUploaderControllerSets(
 
 // multi files upload routes 
 router.post("/", uploadFile.multiFileUpload.bind(uploadFile));
+router.put("/:id", uploadFile.updateMultiFileUpload.bind(uploadFile));
 
 
 ```
