@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import { uploadHandler } from "./fileUploadConfig.js";
 
 import fs from "fs";
 import multer from "multer";
@@ -304,7 +303,5 @@ class FileServe {
         }
     }
 }
-
-export { FileServe };
 
 export { ControllerSets, FileServe, FileUploaderControllerSets };
