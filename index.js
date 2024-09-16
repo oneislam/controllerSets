@@ -1,9 +1,9 @@
-import mongoose from "mongoose";
-
 import fs from "fs";
+import mongoose from "mongoose";
 import multer from "multer";
 import path from "path";
 
+// file upload settings
 const createStorage = (folderName, basePath) => {
     return multer.diskStorage({
         destination: (req, file, cb) => {
@@ -25,6 +25,7 @@ const uploadHandler = (folderName, basePath) =>
         },
     });
 
+// Controller set without file uploading
 class ControllerSets {
     constructor(model, orderBy = "none", query = []) {
         this.model = model;
@@ -55,7 +56,7 @@ class ControllerSets {
 
             if (req.query.page) {
                 const page = parseInt(req.query.page) || 1;
-                const pageSize = parseInt(req.query.pageSize) || 3;
+                const pageSize = parseInt(req.query.pageSize) || 10;
                 const skip = (page - 1) * pageSize;
                 const totalRecords = await this.model.countDocuments(filters);
                 const totalPages = Math.ceil(totalRecords / pageSize);
@@ -143,6 +144,7 @@ class ControllerSets {
     }
 }
 
+// Controller set with file uploading
 class FileUploaderControllerSets {
     constructor(model, uploadOptions, basePath) {
         this.model = model;
@@ -283,8 +285,7 @@ class FileUploaderControllerSets {
     }
 }
 
-// file upload config
-
+// file Serve
 class FileServe {
     constructor(paths = [], basePath) {
         this.paths = paths;
