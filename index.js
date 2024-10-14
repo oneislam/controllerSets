@@ -1,308 +1,141 @@
-import fs from "fs";
 import mongoose from "mongoose";
-import multer from "multer";
-import path from "path";
 
-// file upload settings
-const createStorage = (folderName, basePath) => {
-    return multer.diskStorage({
-        destination: (req, file, cb) => {
-            const fullFolderPath = path.join(basePath, folderName);
-            fs.mkdirSync(fullFolderPath, { recursive: true });
-            cb(null, fullFolderPath);
-        },
-        filename: (req, file, cb) => {
-            cb(null, file.originalname);
-        },
-    });
-};
-
-const uploadHandler = (folderName, basePath) =>
-    multer({
-        storage: createStorage(folderName, basePath),
-        limits: {
-            fileSize: 1024 * 1024 * 50,
-        },
-    });
-
-// Controller set without file uploading
 class ControllerSets {
-    constructor(model, orderBy = "none", query = []) {
+    constructor(model, orderBy = "none", query = [], runAfterCreate = "none") {
         this.model = model;
         this.orderBy = orderBy;
         this.query = query;
+        this.runAfterCreate = runAfterCreate;
     }
 
-    async getAll(req, res) {
-        try {
-            let filters = {};
-            let sort = {};
-            if (Object.keys(req.query).length > 0) {
-                for (let i = 0; i < this.query.length; i++) {
-                    const query = this.query[i];
-                    if (req.query[query]) {
-                        filters[query] = req.query[query];
-                    }
-                }
-            }
-
-            if (this.orderBy !== "none") {
-                const sortKey = this.orderBy.startsWith("-")
-                    ? this.orderBy.substring(1)
-                    : this.orderBy;
-                const sortOrder = this.orderBy.startsWith("-") ? -1 : 1;
-                sort = { sort: { [sortKey]: sortOrder } };
-            }
-
-            if (req.query.page) {
-                const page = parseInt(req.query.page) || 1;
-                const pageSize = parseInt(req.query.pageSize) || 10;
-                const skip = (page - 1) * pageSize;
-                const totalRecords = await this.model.countDocuments(filters);
-                const totalPages = Math.ceil(totalRecords / pageSize);
-                const result = await this.model
-                    .find(filters, null, sort)
-                    .skip(skip)
-                    .limit(pageSize);
-
-                return res
-                    .status(200)
-                    .send({ data: result, page, totalPages, totalRecords });
-            }
-
-            const result = await this.model.find(filters, null, sort);
-            return res.status(200).send(result);
-        } catch (error) {
-            console.log(error);
-            res.status(500).json({ error: "Internal server error" });
-        }
-    }
-
-    async getById(req, res) {
+    async getObjectById(req, res) {
         const { id } = req.params;
         if (!mongoose.Types.ObjectId.isValid(id)) {
-            return res.status(400).json({ error: "Invalid ID" });
+            return this.sendErrorResponse(res, 400, "Invalid ID");
         }
 
         try {
-            const example = await this.model.findById(id);
-            if (!example) {
-                return res.status(404).json({ error: "Data not found" });
+            const object = await this.model.findById(id);
+            if (!object) {
+                return this.sendErrorResponse(res, 404, "Details not found");
             }
-            res.json(example);
+            return object;
         } catch (error) {
-            res.status(500).json({ error: "Internal server error" });
+            this.sendErrorResponse(res, 500, "Internal server error!");
+            return null;
         }
     }
 
-    async create(req, res, next, body = null) {
+    async create(req, res) {
         try {
-            const data = body ? body : req.body;
-            const result = await this.model.create(data);
-            await result.validate();
-            await result.save();
+            const result = await this.model.create(req.body);
+            if (this.runAfterCreate != "none") {
+                this.runAfterCreate(result);
+            }
             return res.status(201).send(result);
         } catch (error) {
             return res.status(500).send(error.message);
         }
     }
 
-    async update(req, res) {
-        const { id } = req.params;
-        if (!mongoose.Types.ObjectId.isValid(id)) {
-            return res.status(400).json({ error: "Invalid ID" });
+    async getById(req, res) {
+        const object = await this.getObjectById(req, res);
+        if (object) {
+            return res.json(object);
         }
-        try {
-            const result = await this.model.findByIdAndUpdate(id, req.body, {
-                new: true,
-            });
+    }
 
-            if (!result) {
-                return res.status(404).json({ error: "data not found" });
+    async update(req, res) {
+        const object = await this.getObjectById(req, res);
+        if (object) {
+            try {
+                const updatedObject = await this.model.findByIdAndUpdate(
+                    object._id,
+                    req.body,
+                    {
+                        new: true,
+                    }
+                );
+                return res.status(200).json(updatedObject);
+            } catch (error) {
+                return this.sendErrorResponse(
+                    res,
+                    500,
+                    "Internal server error!"
+                );
             }
-            return res.status(200).send(result);
-        } catch (error) {
-            res.status(500).json({ error: "Internal server error" });
         }
     }
 
     async delete(req, res) {
-        const { id } = req.params;
-        if (!mongoose.Types.ObjectId.isValid(id)) {
-            return res.status(400).json({ error: "Invalid ID" });
-        }
-        try {
-            const result = await this.model.findByIdAndDelete(id);
-
-            if (!result) {
-                return res.status(404).json({ error: "Data not found" });
+        const object = await this.getObjectById(req, res);
+        if (object) {
+            try {
+                await this.model.findByIdAndDelete(object._id);
+                return res.status(200).json({ message: "Item deleted" });
+            } catch (error) {
+                return this.sendErrorResponse(
+                    res,
+                    500,
+                    "Internal server error!"
+                );
             }
-            return res.status(200).send({ message: "success" });
-        } catch (error) {
-            return res.status(500).json({ error: "Internal server error" });
         }
+    }
+
+    async getAll(req, res) {
+        try {
+            let filters = this.query.reduce((acc, query) => {
+                if (req.query[query]) {
+                    acc[query] = req.query[query];
+                }
+                return acc;
+            }, {});
+
+            let sort = {};
+            if (this.orderBy !== "none") {
+                const sortKey = this.orderBy.startsWith("-")
+                    ? this.orderBy.substring(1)
+                    : this.orderBy;
+                const sortOrder = this.orderBy.startsWith("-") ? -1 : 1;
+                sort = { [sortKey]: sortOrder };
+            }
+
+            if (req.query.page) {
+                return await this.getPaginatedResults(req, res, filters, sort);
+            }
+
+            const result = await this.model.find(filters).sort(sort);
+            return res.status(200).json({ data: result });
+        } catch (error) {
+            console.log(error);
+            return this.sendErrorResponse(res, 500, "Internal server error!");
+        }
+    }
+
+    async getPaginatedResults(req, res, filters, sort) {
+        const page = parseInt(req.query.page) || 1;
+        const pageSize = parseInt(req.query.pageSize) || 10;
+        const skip = (page - 1) * pageSize;
+
+        try {
+            const [totalRecords, result] = await Promise.all([
+                this.model.countDocuments(filters),
+                this.model.find(filters).skip(skip).limit(pageSize).sort(sort),
+            ]);
+
+            const totalPages = Math.ceil(totalRecords / pageSize);
+            return res
+                .status(200)
+                .json({ data: result, page, totalPages, totalRecords });
+        } catch (error) {
+            return this.sendErrorResponse(res, 500, "Internal server error!");
+        }
+    }
+
+    sendErrorResponse(res, statusCode, message) {
+        return res.status(statusCode).json({ error: message });
     }
 }
 
-// Controller set with file uploading
-class FileUploaderControllerSets {
-    constructor(model, uploadOptions, basePath) {
-        this.model = model;
-        this.uploadOptions = uploadOptions;
-        this.basePath = basePath;
-    }
-
-    async fileUpload(req, res, next) {
-        try {
-            const uploadOptions = this.uploadOptions;
-            const basePath = this.basePath;
-            uploadHandler(uploadOptions.folder, basePath).single(
-                uploadOptions.fileField
-            )(req, res, async (err) => {
-                if (err) {
-                    return res.status(400).json({ error: err.message });
-                }
-                if (req.file) {
-                    req.body[`${uploadOptions.fileField}`] = req.file.filename;
-                }
-                try {
-                    const result = await this.model.create(req.body);
-                    await result.validate();
-                    await result.save();
-                    return res.status(201).send(result);
-                } catch (error) {
-                    return res.status(500).send(error.message);
-                }
-            });
-        } catch (error) {
-            return res.status(500).send(error.message);
-        }
-    }
-
-    async updateFileUpload(req, res, next) {
-        try {
-            const uploadOptions = this.uploadOptions;
-            const basePath = this.basePath;
-            uploadHandler(uploadOptions.folder, basePath).single(
-                uploadOptions.fileField
-            )(req, res, async (err) => {
-                if (err) {
-                    return res.status(400).json({ error: err.message });
-                }
-                if (req.file) {
-                    req.body[`${uploadOptions.fileField}`] = req.file.filename;
-                }
-                try {
-                    const { id } = req.params;
-                    const result = await this.model.findByIdAndUpdate(
-                        id,
-                        req.body,
-                        {
-                            new: true,
-                        }
-                    );
-                    if (!result) {
-                        return res.status(404).send("Resource not found");
-                    }
-                    return res.status(200).send(result);
-                } catch (error) {
-                    return res.status(500).send(error.message);
-                }
-            });
-        } catch (error) {
-            return res.status(500).send(error.message);
-        }
-    }
-
-    async multiFileUpload(req, res, next) {
-        try {
-            const uploadOptions = this.uploadOptions;
-            const basePath = this.basePath;
-            uploadHandler(uploadOptions.folder, basePath).fields(
-                uploadOptions.multiFields
-            )(req, res, async (err) => {
-                if (err) {
-                    return res.status(400).json({ error: err.message });
-                }
-                uploadOptions.multiFields.forEach((field) => {
-                    const fileField = field.name;
-                    req.body[`${field.name}`] = req.files[fileField]
-                        ? req.files[fileField][0].filename
-                        : "";
-                });
-
-                try {
-                    const result = await this.model.create(req.body);
-                    await result.validate();
-                    await result.save();
-                    return res.status(201).send(result);
-                } catch (error) {
-                    return res.status(500).send(error.message);
-                }
-            });
-        } catch (error) {
-            return res.status(500).send(error.message);
-        }
-    }
-
-    async updateMultiFileUpload(req, res, next) {
-        try {
-            const uploadOptions = this.uploadOptions;
-            const basePath = this.basePath;
-            uploadHandler(uploadOptions.folder, basePath).fields(
-                uploadOptions.multiFields
-            )(req, res, async (err) => {
-                if (err) {
-                    return res.status(400).json({ error: err.message });
-                }
-                uploadOptions.multiFields.forEach((field) => {
-                    const fileField = field.name;
-                    req.body[`${field.name}`] = req.files[fileField]
-                        ? req.files[fileField][0].filename
-                        : "";
-                });
-
-                try {
-                    const { id } = req.params;
-                    const result = await this.model.findByIdAndUpdate(
-                        id,
-                        req.body,
-                        {
-                            new: true,
-                        }
-                    );
-                    if (!result) {
-                        return res.status(404).send("Resource not found");
-                    }
-                    return res.status(200).send(result);
-                } catch (error) {
-                    return res.status(500).send(error.message);
-                }
-            });
-        } catch (error) {
-            return res.status(500).send(error.message);
-        }
-    }
-}
-
-// file Serve
-class FileServe {
-    constructor(paths = [], basePath) {
-        this.paths = paths;
-        this.basePath = basePath;
-    }
-
-    async serve(req, res) {
-        try {
-            const { fileName } = req.params;
-            const paths = this.paths;
-            const basePath = this.basePath;
-            const imagePath = path.join(basePath, ...paths, fileName);
-            return res.sendFile(imagePath);
-        } catch (error) {
-            return res.status(400).send({ message: "Invalid Routes!" });
-        }
-    }
-}
-
-export { ControllerSets, FileServe, FileUploaderControllerSets };
+export { ControllerSets };
