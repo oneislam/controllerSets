@@ -2,7 +2,7 @@
 
 [controllerSets](https://oneislam.pro/)  is designed to reduce code for Node.js/Express.js developers by following the MVC architecture. First, create your model, import ControllerSet, create a new instance, define routes, and your API is ready. It simplifies data-saving logic and allows for data validation through Mongoose models.
 
-Additionally, the [express-controller-sets-router]("https://www.npmjs.com/package/express-controller-sets-router") package enables route definition without extra code. [controller-sets-s3-file-upload]("https://www.npmjs.com/package/controller-sets-s3-file-upload") can also be used to upload files to S3 efficiently.
+Additionally, the [express-controller-sets-router](https://www.npmjs.com/package/express-controller-sets-router) package enables route definition without extra code. [controller-sets-s3-file-upload](https://www.npmjs.com/package/controller-sets-s3-file-upload) can also be used to upload files to S3 efficiently.
 
 
 ## Update logs:
@@ -77,7 +77,7 @@ export default router;
 ```
 
 ### File upload 
-[controller-sets-s3-file-upload]("https://www.npmjs.com/package/controller-sets-s3-file-upload")
+[controller-sets-s3-file-upload](https://www.npmjs.com/package/controller-sets-s3-file-upload)
 
 
 
