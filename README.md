@@ -1,25 +1,20 @@
 # controllerSets
 
-[controllerSets](https://sabbirmahmud.com/) is a automate tool that help backend developers to create Rest api using express.js and mongoose. Don't need to write same code again and again, use [controllerSets](https://sabbirmahmud.com/) to boost your productivity.
+[controllerSets](https://oneislam.pro/)  is designed to reduce code for Node.js/Express.js developers by following the MVC architecture. First, create your model, import ControllerSet, create a new instance, define routes, and your API is ready. It simplifies data-saving logic and allows for data validation through Mongoose models.
+
+Additionally, the [express-controller-sets-router]("https://www.npmjs.com/package/express-controller-sets-router") package enables route definition without extra code. [controller-sets-s3-file-upload]("https://www.npmjs.com/package/controller-sets-s3-file-upload") can also be used to upload files to S3 efficiently.
+
 
 ## Update logs:
-* create crud api by create an object -> don't need to write same code again and again
-* single field file upload -> post and put or patch
-* multi-field file upload -> post and put or patch
-* file Serving -> serve file from uploads folders
+* removed file uploading from main controller.
+* create a new middleware to upload files to S3.
 
 
 ## Documentation
 
-The official documentation website is [controllerSets](https://sabbirmahmud.com/).
+The official documentation website is [controllerSets](https://oneislam.pro/).
 
-controllerSets 1.0.0 was released on May 2023. You can find more details on [backwards breaking changes in 1.0.0 on our docs site](https://sabbirmahmud.com/).
-
-## Support
-
-  - [Join Discord](https://discord.gg/TWSeY9PJ)
- 
-
+controllerSets 1.0.0 was released on May 2023. You can find more details on [backwards breaking changes in 1.0.0 on our docs site](https://oneislam.pro/).
 
 ## Installation
 
@@ -34,21 +29,27 @@ $ npm i express-controller-sets
 ```javascript
 
 // Using ES6 imports
-import { ControllerSets, FileUploaderControllerSets } from "express-controller-sets";
+import { ControllerSets } from "express-controller-sets";
 ```
 
 ### Defining an class to create rest api without file upload
 
 ```js
+
+// imports
 import { ControllerSets } from "express-controller-sets";
-import taskModel from "../models/taskModels.js";
+import taskModel from "./modelPath.js";
 
 // Create an instance of the controller
-// ControllerSets(Mongoose Model, sorting Field, filters field)
+// ControllerSets(Mongoose Model, sorting Field, filters field, run function after save data)
 const taskController = new ControllerSets(taskModel, "-_id", [
   "email",
   "status",
-]);
+],
+(createdObject) => {
+  console.log("New object created: ", createdObject);
+});
+
 export { taskController };
 
 ```
@@ -57,7 +58,7 @@ export { taskController };
 ```js
 // imports
 import { Router } from "express";
-import { taskController } from "../controllers/taskClassController.js";
+import { taskController } from "../taskClassController.js";
 
 // routers
 const router = Router();
@@ -75,115 +76,14 @@ export default router;
 
 ```
 
-### Define base path
-
-```js
-// base path is the main parent folder where your files will be uploaded
-// how to create base path --->
-// create settings.js
-import path from "path";
-import { fileURLToPath } from "url";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const basePath = path.resolve(__dirname);
-
-export { basePath };
-
-```
-
-### Single files uploading
-
-```js
-import {ControllerSets,FileUploaderControllerSets} from "express-controller-sets";
-import taskModel from "../models/taskModels.js";
-import { basePath } from "../settings.js";
-
-// (Mongoose Model, Upload options, basePath)
-// in file upload we have only one method create
-const uploadFile = new FileUploaderControllerSets(
-  taskModel,
-  {
-    folder: "uploads/user/images/",
-    fileField: "document",
-  },
-  basePath
-);
-
-export { taskController, uploadFile };
-
-```
-
-### Single file uploading routing
-```js
-
-// imports
-import {taskController,uploadFile} from "../controllers/taskClassController.js";
-
-router.post("/", uploadFile.fileUpload.bind(uploadFile));
-router.put("/:id", uploadFile.updateFileUpload.bind(uploadFile));
-
-// exports
-export default router;
-
-```
-
-### Multiple files uploading
-
-```js
-
-// multi fields files upload -> create a list of fields name array 
-// (Mongoose Model, Upload options, basePath)
-const uploadFile = new FileUploaderControllerSets(
-  taskModel,
-  {
-    folder: "uploads/user/files/",
-    fileField: "document",
-
-    // multi fields upload options -> {name: field name, maxCount: int}
-    multiFields: [
-      { name: "profile_img", maxCount: 1 },
-      { name: "nid", maxCount: 1 },
-      { name: "birth_certificate", maxCount: 1 },
-    ],
-  },
-  basePath
-);
-
-// multi files upload routes 
-router.post("/", uploadFile.multiFileUpload.bind(uploadFile));
-router.put("/:id", uploadFile.updateMultiFileUpload.bind(uploadFile));
-
-
-```
-
-### serve files
-
-```js
-import { basePath } from "../settings.js";
-import { FileServe } from "express-controller-sets";
-
-// path -> parent -> child -> sub-child
-const paths = ["uploads", "demo", "images"];
-// (file path array, base path)
-const filesController = new FileServe(paths, basePath);
-export { filesController };
-
-// routes
-import { filesController } from "./controllers/taskClassController.js";
-
-// use app or router ->
-// don't rename params -> :fileName
-app.get("/files/:fileName", filesController.serve.bind(filesController));
-
-```
-
+### File upload 
+[controller-sets-s3-file-upload]("https://www.npmjs.com/package/controller-sets-s3-file-upload")
 
 
 
 ## License
 
-Copyright (c) 2023 LearnBoost &lt;https://sabbirmahmud.com/&gt;
+Copyright (c) 2023 LearnBoost &lt;https://oneislam.pro/&gt;
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
