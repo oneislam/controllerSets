@@ -1,10 +1,17 @@
 import mongoose from "mongoose";
 
 class ControllerSets {
-    constructor(model, orderBy = "none", query = [], runAfterCreate = "none") {
+    constructor(
+        model,
+        orderBy = "none",
+        query = [],
+        search = "none",
+        runAfterCreate = "none"
+    ) {
         this.model = model;
         this.orderBy = orderBy;
         this.query = query;
+        this.search = search;
         this.runAfterCreate = runAfterCreate;
     }
 
@@ -91,6 +98,16 @@ class ControllerSets {
                 }
                 return acc;
             }, {});
+
+            if (this.search !== "none") {
+                const keyword = this.search;
+                if (req.query[keyword] !== undefined) {
+                    filters[keyword] = {
+                        $regex: `${req.query[keyword]}`,
+                        $options: "i",
+                    };
+                }
+            }
 
             let sort = {};
             if (this.orderBy !== "none") {
