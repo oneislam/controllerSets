@@ -132,7 +132,7 @@ class ControllerSets {
 
     async getPaginatedResults(req, res, filters, sort) {
         const page = parseInt(req.query.page) || 1;
-        const pageSize = parseInt(req.query.pageSize) || 10;
+        const pageSize = parseInt(req.query.pageSize) || 50;
         const skip = (page - 1) * pageSize;
 
         try {

@@ -1,13 +1,20 @@
+# ONE ISLAM
+
+[oneislam](https://oneislam.pro/) is an IT company founded to connect humanity with Islam and usher in a `new era of halal platforms for Muslims`.
+
 # controllerSets
 
-[controllerSets](https://oneislam.pro/)  is designed to reduce code for Node.js/Express.js developers by following the MVC architecture. First, create your model, import ControllerSet, create a new instance, define routes, and your API is ready. It simplifies data-saving logic and allows for data validation through Mongoose models.
+[controllerSets](https://oneislam.pro/)  Designed for Node.js/Express.js developers, it follows modern JavaScript architecture to minimize code. Simply create a model, import ControllerSet, instantiate it, define routes, and your API is ready. It streamlines data handling and enables validation via Mongoose models.
 
-Additionally, the [express-controller-sets-router](https://www.npmjs.com/package/express-controller-sets-router) package enables route definition without extra code. [controller-sets-s3-file-upload](https://www.npmjs.com/package/controller-sets-s3-file-upload) can also be used to upload files to S3 efficiently.
+Additionally, the [express-controller-sets-router](https://www.npmjs.com/package/express-controller-sets-router) package simplifies route definition, while. [controller-sets-s3-file-upload](https://www.npmjs.com/package/controller-sets-s3-file-upload) enables efficient S3 file uploads.
 
 
 ## Update logs:
-* removed file uploading from main controller.
-* create a new middleware to upload files to S3.
+* Develop a middleware for `uploading files to S3`.
+* Enable `search` functionality.
+* Set the default `page size` to 50.
+* Add support for custom `middlewares`.
+* Enable S3 file uploads via `.env` configuration.
 
 
 ## Documentation
@@ -32,7 +39,7 @@ $ npm i express-controller-sets
 import { ControllerSets } from "express-controller-sets";
 ```
 
-### Defining an class to create rest api without file upload
+### Defining an class to create rest api
 
 ```js
 
@@ -41,11 +48,12 @@ import { ControllerSets } from "express-controller-sets";
 import taskModel from "./modelPath.js";
 
 // Create an instance of the controller
-// ControllerSets(Mongoose Model, sorting Field, filters field, run function after save data)
+// ControllerSets(Mongoose Model, sorting Field, filters field, Search field, run function after save data)
 const taskController = new ControllerSets(taskModel, "-_id", [
   "email",
   "status",
 ],
+"name",
 (createdObject) => {
   console.log("New object created: ", createdObject);
 });
@@ -83,7 +91,7 @@ export default router;
 
 ## License
 
-Copyright (c) 2023 LearnBoost &lt;https://oneislam.pro/&gt;
+Copyright (c) 2025 Learn &lt;https://oneislam.pro/&gt;
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
